@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Steal the Memes: Tycoon</title>
+    <style>
+      :root {
+        --bg-color: #1a1a1a;
+        --text-color: #ffffff;
+        --accent-color: #ff0055;
+        --money-color: #00ff88;
+        --shield-color: #00ccff;
+        --upgrade-color: #ffcc00; 
+      }
+
+      body {
+        font-family: "Courier New", Courier, monospace;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      h1 {
+        text-shadow: 2px 2px var(--accent-color);
+        margin-bottom: 10px;
+      }
+
+      #hud {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 600px;
+        background: #333;
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid var(--text-color);
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+
+      .money-text { color: var(--money-color); }
+
+      #game-board {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        width: 100%;
+        max-width: 800px;
+      }
+
+      .zone {
+        background: #2a2a2a;
+        border: 2px solid #555;
+        border-radius: 10px;
+        padding: 15px;
+        min-height: 350px;
+        position: relative;
+      }
+
+      .unit-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        max-height: 250px;
+        overflow-y: auto;
+        padding: 5px;
+      }
+
+      .unit {
+        background: #444;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        animation: bounce 0.5s;
+      }
+
+      .unit-permanent {
+        border: 1px solid var(--upgrade-color);
+        background: #3d3411;
+        box-shadow: 0 0 8px var(--upgrade-color);
+      }
+
+      @keyframes bounce {
+        0% { transform: scale(0); }
+        80% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+      }
+
+      .actions {
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      button {
+        padding: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        transition: 0.1s;
+      }
+
+      button:active { transform: scale(0.95); }
+
+      .btn-buy { background-color: var(--money-color); color: #000; }
+      .btn-upgrade { background-color: var(--upgrade-color); color: #000; }
+      .btn-steal { background-color: var(--accent-color); color: white; }
+      .btn-shield { background-color: var(--shield-color); width: 100%; padding: 15px; margin-bottom: 20px; }
+
+      .shield-active { border-color: var(--shield-color) !important; box-shadow: 0 0 20px var(--shield-color); }
+
+      #log {
+        width: 100%;
+        max-width: 800px;
+        height: 100px;
+        background: #000;
+        border: 1px solid #555;
+        margin-top: 20px;
+        padding: 10px;
+        overflow-y: scroll;
+        font-size: 0.85rem;
+        color: #ccc;
+      }
+
+      .log-bad { color: var(--accent-color); }
+      .log-good { color: var(--money-color); }
+      .log-special { color: var(--upgrade-color); }
+    </style>
+  </head>
+  <body>
+    <h1>STEAL A MEME: TYCOON</h1>
+
+    <div id="hud">
+      <div>Cash: <span id="money" class="money-text">$0</span></div>
+      <div>Income: <span id="income" class="money-text">$0</span>/sec</div>
+    </div>
+
+    <button id="shieldBtn" class="btn-shield" onclick="toggleShield()">
+      ACTIVATE SHIELD (Ready)
+    </button>
+
+    <div id="game-board">
+      <div id="player-zone" class="zone">
+        <h2>YOUR BASE</h2>
+        <div id="my-units" class="unit-list"></div>
+
+        <div class="actions">
+          <h3>MARKETPLACE (Stealable)</h3>
+          <button class="btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50 | +$2/s)</button>
+          <button class="btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200 | +$10/s)</button>
+          <button class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1000 | +$60/s)</button>
+          
+          <h3>BASE UPGRADES (Permanent)</h3>
+          <button class="btn-upgrade" onclick="buyUnit('Security Bot')">Security Bot ($400 | +$15/s)</button>
+          <button class="btn-upgrade" onclick="buyUnit('Neon Sign')">Neon Sign ($800 | +$40/s)</button>
+          <button class="btn-upgrade" onclick="buyUnit('Diamond Statue')">Diamond Statue ($5000 | +$300/s)</button>
+          <button class="btn-upgrade" onclick="buyUnit('Server Room')">Server Room ($100,000 | +$5,000/s)</button>
+        </div>
+      </div>
+
+      <div class="zone">
+        <h2>NEIGHBOR'S BASE</h2>
+        <div id="enemy-units" class="unit-list"></div>
+        <div class="actions">
+          <button class="btn-steal" onclick="attemptSteal()">🏃 ATTEMPT TO STEAL UNIT</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="log">Welcome! Save up for the $100k Server Room to become unstoppable.</div>
+
+    <script>
+      let money = 100;
+      let myUnits = [];
+      let enemyUnits = [];
+      let shieldActive = false;
+      let shieldReady = true;
+
+      const unitTypes = {
+        "Noob Cube": { cost: 50, mps: 2, icon: "🧊", permanent: false },
+        "Vibe Cat": { cost: 200, mps: 10, icon: "🐱", permanent: false },
+        "Golden Doge": { cost: 1000, mps: 60, icon: "🐕", permanent: false },
+        "Security Bot": { cost: 400, mps: 15, icon: "🤖", permanent: true },
+        "Neon Sign": { cost: 800, mps: 40, icon: "💡", permanent: true },
+        "Diamond Statue": { cost: 5000, mps: 300, icon: "💎", permanent: true },
+        "Server Room": { cost: 100000, mps: 5000, icon: "🖥️", permanent: true }
+      };
+
+      setInterval(() => {
+        let income = myUnits.reduce((acc, u) => acc + u.mps, 0);
+        money += income;
+        updateUI();
+      }, 1000);
+
+      setInterval(() => {
+        const stealableNames = Object.keys(unitTypes).filter(name => !unitTypes[name].permanent);
+        const randomName = stealableNames[Math.floor(Math.random() * stealableNames.length)];
+        const stats = unitTypes[randomName];
+        enemyUnits.push({ ...stats, name: randomName });
+        updateUI();
+      }, 4500);
+
+      setInterval(() => {
+        const stealableFromPlayer = myUnits.filter(u => !u.permanent);
+        if (stealableFromPlayer.length > 0) {
+          if (shieldActive) {
+            log("🛡️ Enemy hit your SHIELD!", "neutral");
+          } else if (Math.random() < 0.35) {
+            const targetUnit = stealableFromPlayer[Math.floor(Math.random() * stealableFromPlayer.length)];
+            const actualIndex = myUnits.indexOf(targetUnit);
+            const stolen = myUnits.splice(actualIndex, 1)[0];
+            enemyUnits.push(stolen);
+            log(`🚨 ALERT! Neighbor stole your ${stolen.name}!`, "log-bad");
+            updateUI();
+          }
+        }
+      }, 7500);
+
+      function buyUnit(name) {
+        const stats = unitTypes[name];
+        if (money >= stats.cost) {
+          money -= stats.cost;
+          myUnits.push({ ...stats, name: name });
+          log(`Purchased ${name}!`, stats.permanent ? "log-special" : "log-good");
+          updateUI();
+        } else {
+          log(`You need $${stats.cost - money} more for that!`, "log-bad");
+        }
+      }
+
+      function attemptSteal() {
+        if (enemyUnits.length === 0) {
+          log("The neighbor is empty-handed.", "neutral");
+          return;
+        }
+        if (Math.random() > 0.5) {
+          const stolen = enemyUnits.pop();
+          myUnits.push(stolen);
+          log(`🏃💨 SUCCESS! You swiped a ${stolen.name}!`, "log-good");
+        } else {
+          log("❌ CAUGHT! You paid $25 in fines.", "log-bad");
+          if (money >= 25) money -= 25;
+        }
+        updateUI();
+      }
+
+      function toggleShield() {
+        if (!shieldReady) return;
+        shieldActive = true;
+        shieldReady = false;
+        document.getElementById("player-zone").classList.add("shield-active");
+        const btn = document.getElementById("shieldBtn");
+        btn.innerHTML = "SHIELD ACTIVE!";
+        setTimeout(() => {
+          shieldActive = false;
+          document.getElementById("player-zone").classList.remove("shield-active");
+          btn.innerHTML = "RECHARGING...";
+          setTimeout(() => {
+            shieldReady = true;
+            btn.innerHTML = "ACTIVATE SHIELD (Ready)";
+          }, 12000);
+        }, 8000);
+      }
+
+      function updateUI() {
+        document.getElementById("money").innerText = `$${money.toLocaleString()}`;
+        document.getElementById("income").innerText = `$${myUnits.reduce((acc, u) => acc + u.mps, 0).toLocaleString()}`;
+
+        const render = (containerId, list) => {
+          const container = document.getElementById(containerId);
+          container.innerHTML = "";
+          list.forEach(u => {
+            let div = document.createElement("div");
+            div.className = `unit ${u.permanent ? 'unit-permanent' : ''}`;
+            div.innerText = `${u.icon} ${u.name}`;
+            container.appendChild(div);
+          });
+        };
+
+        render("my-units", myUnits);
+        render("enemy-units", enemyUnits);
+      }
+
+      function log(msg, type) {
+        const logBox = document.getElementById("log");
+        const p = document.createElement("div");
+        p.innerText = `> ${msg}`;
+        p.className = type;
+        logBox.prepend(p);
+      }
+      
+      updateUI();
+    </script>
+  </body>
+</html>
