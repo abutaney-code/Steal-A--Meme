@@ -24,12 +24,23 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        transition: background 0.1s;
       }
 
-      h1 {
-        text-shadow: 2px 2px var(--accent-color);
-        margin-bottom: 10px;
+      /* Flashing animation for the glitch state */
+      @keyframes glitch-bg {
+        0% { background-color: #ff0000; }
+        25% { background-color: #00ff00; }
+        50% { background-color: #0000ff; }
+        75% { background-color: #ffff00; }
+        100% { background-color: #ff00ff; }
       }
+
+      .glitch-active-body {
+        animation: glitch-bg 0.15s infinite !important;
+      }
+
+      h1 { text-shadow: 2px 2px var(--accent-color); margin-bottom: 10px; }
 
       #hud {
         display: flex;
@@ -61,7 +72,6 @@
         border-radius: 10px;
         padding: 15px;
         min-height: 350px;
-        position: relative;
       }
 
       .unit-list {
@@ -78,19 +88,12 @@
         padding: 5px 10px;
         border-radius: 5px;
         font-size: 0.8rem;
-        animation: bounce 0.5s;
       }
 
       .unit-permanent {
         border: 1px solid var(--upgrade-color);
         background: #3d3411;
         box-shadow: 0 0 8px var(--upgrade-color);
-      }
-
-      @keyframes bounce {
-        0% { transform: scale(0); }
-        80% { transform: scale(1.1); }
-        100% { transform: scale(1); }
       }
 
       .actions {
@@ -100,22 +103,8 @@
         gap: 8px;
       }
 
-      button {
-        padding: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        border: none;
-        border-radius: 5px;
-        transition: 0.1s;
-      }
-
-      button:disabled {
-        background-color: #555 !important;
-        cursor: not-allowed;
-        color: #888 !important;
-      }
-
-      button:active:not(:disabled) { transform: scale(0.95); }
+      button { padding: 8px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; }
+      button:disabled { background-color: #555 !important; color: #888 !important; }
 
       .btn-buy { background-color: var(--money-color); color: #000; }
       .btn-upgrade { background-color: var(--upgrade-color); color: #000; }
@@ -123,26 +112,11 @@
       .btn-shield { background-color: var(--shield-color); width: 100%; padding: 15px; margin-bottom: 20px; }
       .btn-glitch { background-color: var(--glitch-color); color: white; border: 2px dashed white; }
 
-      #log {
-        width: 100%;
-        max-width: 800px;
-        height: 100px;
-        background: #000;
-        border: 1px solid #555;
-        margin-top: 20px;
-        padding: 10px;
-        overflow-y: scroll;
-        font-size: 0.85rem;
-        color: #ccc;
-      }
-
-      .log-bad { color: var(--accent-color); }
-
       #glitch-overlay {
         display: none;
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.95);
+        background: rgba(0,0,0,0.8);
         z-index: 1000;
         flex-direction: column;
         justify-content: center;
@@ -150,15 +124,28 @@
         text-align: center;
       }
 
-      .glitch-text { color: var(--glitch-color); font-weight: bold; font-size: 2rem; margin-bottom: 20px; padding: 0 20px; }
-      #countdown { font-size: 5rem; color: white; font-family: 'Courier New', monospace; }
+      .glitch-text { 
+        color: white; 
+        font-weight: bold; 
+        font-size: 2.2rem; 
+        text-shadow: 3px 3px #ff0000;
+        margin-bottom: 20px; 
+        padding: 0 20px; 
+      }
+      #countdown { font-size: 6rem; color: white; font-family: 'Courier New', monospace; font-weight: 900; }
+      
+      #log {
+        width: 100%; max-width: 800px; height: 100px;
+        background: #000; border: 1px solid #555; margin-top: 20px;
+        padding: 10px; overflow-y: scroll; font-size: 0.85rem; color: #ccc;
+      }
     </style>
   </head>
-  <body>
+  <body id="main-body">
 
     <div id="glitch-overlay">
       <div class="glitch-text">Hahaha you want to much money but bad boy</div>
-      <div style="color: #666; letter-spacing: 2px;">RESTORING SYSTEM...</div>
+      <div style="color: #fff; letter-spacing: 2px; font-weight: bold;">SYSTEM ERROR: REBOOTING</div>
       <div id="countdown">200</div>
     </div>
 
@@ -169,47 +156,34 @@
       <div>Income: <span id="income" class="money-text">$0</span>/sec</div>
     </div>
 
-    <button id="shieldBtn" class="btn-shield" onclick="toggleShield()">
-      ACTIVATE SHIELD (Ready)
-    </button>
+    <button id="shieldBtn" class="btn-shield" onclick="toggleShield()">ACTIVATE SHIELD (Ready)</button>
 
     <div id="game-board">
       <div id="player-zone" class="zone">
         <h2>YOUR BASE</h2>
         <div id="my-units" class="unit-list"></div>
-
         <div class="actions">
-          <h3>MARKETPLACE (Stealable)</h3>
-          <button class="game-btn btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50 | +$2/s)</button>
-          <button class="game-btn btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200 | +$10/s)</button>
-          <button class="game-btn btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1000 | +$60/s)</button>
-          
-          <h3>BASE UPGRADES (Permanent)</h3>
-          <button class="game-btn btn-upgrade" onclick="buyUnit('Security Bot')">Security Bot ($400 | +$15/s)</button>
-          <button id="diamondStatueBtn" class="game-btn btn-upgrade" onclick="buyUnit('Diamond Statue')">
-            Diamond Statue ($5,000 | +$300/s) [0/15]
-          </button>
-          <button id="serverRoomBtn" class="game-btn btn-upgrade" onclick="buyUnit('Server Room')">
-            Server Room ($100,000 | +$5,000/s) [0/5]
-          </button>
-
+          <h3>MARKETPLACE</h3>
+          <button class="btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50)</button>
+          <button class="btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200)</button>
+          <button class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1000)</button>
+          <h3>UPGRADES</h3>
+          <button id="diamondStatueBtn" class="btn-upgrade" onclick="buyUnit('Diamond Statue')">Diamond Statue ($5k) [0/15]</button>
+          <button id="serverRoomBtn" class="btn-upgrade" onclick="buyUnit('Server Room')">Server Room ($100k) [0/5]</button>
           <h3>⚠️ SECRET ⚠️</h3>
-          <button class="game-btn btn-glitch" onclick="triggerGlitch()">
-            GLITCHED COIN ($1 | +$1,000,000,000/s)
-          </button>
+          <button class="btn-glitch" onclick="triggerGlitch()">GLITCHED COIN ($1)</button>
         </div>
       </div>
-
       <div class="zone">
         <h2>NEIGHBOR'S BASE</h2>
         <div id="enemy-units" class="unit-list"></div>
         <div class="actions">
-          <button id="stealBtn" class="game-btn btn-steal" onclick="attemptSteal()">🏃 ATTEMPT TO STEAL UNIT</button>
+          <button class="btn-steal" onclick="attemptSteal()">🏃 STEAL UNIT</button>
         </div>
       </div>
     </div>
 
-    <div id="log">Tip: The Secret item is a scam! Do not buy it!</div>
+    <div id="log">Don't touch the Glitched Coin... seriously.</div>
 
     <script>
       let money = 100;
@@ -223,73 +197,63 @@
         "Noob Cube": { cost: 50, mps: 2, icon: "🧊", permanent: false },
         "Vibe Cat": { cost: 200, mps: 10, icon: "🐱", permanent: false },
         "Golden Doge": { cost: 1000, mps: 60, icon: "🐕", permanent: false },
-        "Security Bot": { cost: 400, mps: 15, icon: "🤖", permanent: true },
         "Diamond Statue": { cost: 5000, mps: 300, icon: "💎", permanent: true, limit: 15 },
         "Server Room": { cost: 100000, mps: 5000, icon: "🖥️", permanent: true, limit: 5 }
       };
 
-      // Main Loop
       setInterval(() => {
         if (!gameActive) return;
-        let income = myUnits.reduce((acc, u) => acc + u.mps, 0);
-        money += income;
+        money += myUnits.reduce((acc, u) => acc + u.mps, 0);
         updateUI();
       }, 1000);
 
-      // Enemy Logic
       setInterval(() => {
         if (!gameActive) return;
-        const stealableNames = Object.keys(unitTypes).filter(name => !unitTypes[name].permanent);
-        const randomName = stealableNames[Math.floor(Math.random() * stealableNames.length)];
-        enemyUnits.push({ ...unitTypes[randomName], name: randomName });
+        const keys = ["Noob Cube", "Vibe Cat", "Golden Doge"];
+        const name = keys[Math.floor(Math.random() * keys.length)];
+        enemyUnits.push({ ...unitTypes[name], name });
         updateUI();
       }, 4500);
 
       function triggerGlitch() {
         if (!gameActive || money < 1) return;
-        
-        // Take the $1 cost but give NO income
         money -= 1;
         gameActive = false;
-        updateUI();
-
+        
+        // Add the flashing background class
+        document.getElementById("main-body").classList.add("glitch-active-body");
         document.getElementById("glitch-overlay").style.display = "flex";
         
         let timeLeft = 200;
-        const countdownEl = document.getElementById("countdown");
-        
         const timer = setInterval(() => {
           timeLeft--;
-          countdownEl.innerText = timeLeft;
-          
+          document.getElementById("countdown").innerText = timeLeft;
           if (timeLeft <= 0) {
             clearInterval(timer);
             gameActive = true;
+            document.getElementById("main-body").classList.remove("glitch-active-body");
             document.getElementById("glitch-overlay").style.display = "none";
-            log("System recovered. Don't do that again!", "log-bad");
             updateUI();
           }
         }, 1000);
+        updateUI();
       }
 
       function buyUnit(name) {
         if (!gameActive) return;
-        const stats = unitTypes[name];
-        if (stats.limit && myUnits.filter(u => u.name === name).length >= stats.limit) return;
-        if (money >= stats.cost) {
-          money -= stats.cost;
-          myUnits.push({ ...stats, name: name });
+        const u = unitTypes[name];
+        if (u.limit && myUnits.filter(x => x.name === name).length >= u.limit) return;
+        if (money >= u.cost) {
+          money -= u.cost;
+          myUnits.push({ ...u, name });
           updateUI();
         }
       }
 
       function attemptSteal() {
         if (!gameActive || enemyUnits.length === 0) return;
-        if (Math.random() > 0.5) {
-          myUnits.push(enemyUnits.pop());
-        } else {
-          if (money >= 25) money -= 25;
-        }
+        if (Math.random() > 0.5) myUnits.push(enemyUnits.pop());
+        else if (money >= 25) money -= 25;
         updateUI();
       }
 
@@ -309,10 +273,10 @@
         document.getElementById("income").innerText = gameActive ? `$${myUnits.reduce((acc, u) => acc + u.mps, 0).toLocaleString()}` : "$0";
         
         const dsCount = myUnits.filter(u => u.name === "Diamond Statue").length;
-        document.getElementById("diamondStatueBtn").innerHTML = `Diamond Statue ($5,000 | +$300/s) [${dsCount}/15]`;
+        document.getElementById("diamondStatueBtn").innerText = dsCount >= 15 ? "MAXED" : `Diamond Statue ($5k) [${dsCount}/15]`;
         
         const srCount = myUnits.filter(u => u.name === "Server Room").length;
-        document.getElementById("serverRoomBtn").innerHTML = `Server Room ($100,000 | +$5,000/s) [${srCount}/5]`;
+        document.getElementById("serverRoomBtn").innerText = srCount >= 5 ? "MAXED" : `Server Room ($100k) [${srCount}/5]`;
 
         const render = (id, list) => {
           const el = document.getElementById(id);
@@ -327,14 +291,6 @@
         render("my-units", myUnits);
         render("enemy-units", enemyUnits);
       }
-
-      function log(msg, type) {
-        const p = document.createElement("div");
-        p.innerText = `> ${msg}`;
-        p.className = type;
-        document.getElementById("log").prepend(p);
-      }
-      
       updateUI();
     </script>
   </body>
