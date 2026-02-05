@@ -19,15 +19,11 @@
         font-family: "Courier New", Courier, monospace;
         background-color: var(--bg-color);
         color: var(--text-color);
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        transition: background 0.1s;
+        margin: 0; padding: 20px;
+        display: flex; flex-direction: column; align-items: center;
+        transition: background 0.1s; overflow-x: hidden;
       }
 
-      /* Flashing animation for the glitch state */
       @keyframes glitch-bg {
         0% { background-color: #ff0000; }
         25% { background-color: #00ff00; }
@@ -36,117 +32,73 @@
         100% { background-color: #ff00ff; }
       }
 
-      .glitch-active-body {
-        animation: glitch-bg 0.15s infinite !important;
+      .glitch-active-body { animation: glitch-bg 0.15s infinite !important; }
+
+      @keyframes jitter {
+        0% { transform: translate(0,0) scale(1) rotate(0deg); }
+        25% { transform: translate(12px, -12px) scale(1.4) rotate(8deg); }
+        50% { transform: translate(-12px, 12px) scale(0.6) rotate(-8deg); }
+        75% { transform: translate(8px, 8px) scale(1.2) rotate(4deg); }
+        100% { transform: translate(0,0) scale(1) rotate(0deg); }
       }
 
-      h1 { text-shadow: 2px 2px var(--accent-color); margin-bottom: 10px; }
+      .jitter-text { animation: jitter 0.04s infinite; display: inline-block; }
 
       #hud {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        max-width: 600px;
-        background: #333;
-        padding: 15px;
-        border-radius: 10px;
-        border: 2px solid var(--text-color);
-        margin-bottom: 20px;
-        font-size: 1.2rem;
-        font-weight: bold;
+        display: flex; justify-content: space-between;
+        width: 100%; max-width: 600px;
+        background: #333; padding: 15px; border-radius: 10px;
+        border: 2px solid var(--text-color); margin-bottom: 20px;
+        font-size: 1.2rem; font-weight: bold;
       }
 
       .money-text { color: var(--money-color); }
 
       #game-board {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        width: 100%;
-        max-width: 800px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        width: 100%; max-width: 800px;
       }
 
-      .zone {
-        background: #2a2a2a;
-        border: 2px solid #555;
-        border-radius: 10px;
-        padding: 15px;
-        min-height: 350px;
-      }
+      .zone { background: #2a2a2a; border: 2px solid #555; border-radius: 10px; padding: 15px; min-height: 350px; }
+      .unit-list { display: flex; flex-wrap: wrap; gap: 5px; max-height: 250px; overflow-y: auto; padding: 5px; }
 
-      .unit-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-        max-height: 250px;
-        overflow-y: auto;
-        padding: 5px;
-      }
+      .unit { background: #444; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; position: relative; }
 
-      .unit {
-        background: #444;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.8rem;
-      }
+      /* Sell Mode Visuals */
+      .sell-cursor .unit:not(.unit-permanent) { cursor: pointer; border: 1px dashed red; }
+      .sell-cursor .unit:not(.unit-permanent):hover { background: #600; }
+      .sell-cursor .unit:not(.unit-permanent):hover::after { content: " 💰SELL"; color: #00ff88; font-weight: bold; }
 
-      .unit-permanent {
-        border: 1px solid var(--upgrade-color);
-        background: #3d3411;
-        box-shadow: 0 0 8px var(--upgrade-color);
-      }
+      .unit-permanent { border: 1px solid var(--upgrade-color); background: #3d3411; box-shadow: 0 0 8px var(--upgrade-color); }
+      .unit-elite { border: 2px solid #ffffff; background: #000; box-shadow: 0 0 12px #fff; font-weight: bold; }
 
-      .actions {
-        margin-top: 15px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
+      .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
 
       button { padding: 8px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; }
-      button:disabled { background-color: #555 !important; color: #888 !important; }
-
       .btn-buy { background-color: var(--money-color); color: #000; }
       .btn-upgrade { background-color: var(--upgrade-color); color: #000; }
       .btn-steal { background-color: var(--accent-color); color: white; }
       .btn-shield { background-color: var(--shield-color); width: 100%; padding: 15px; margin-bottom: 20px; }
       .btn-glitch { background-color: var(--glitch-color); color: white; border: 2px dashed white; }
+      .btn-sell-mode { background-color: #444; color: white; border: 2px solid #777; margin-bottom: 5px; }
+      .sell-mode-active { background-color: #ff0000 !important; border: 2px solid white !important; }
 
       #glitch-overlay {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.8);
-        z-index: 1000;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.92); z-index: 1000; flex-direction: column;
+        justify-content: center; align-items: center;
       }
-
-      .glitch-text { 
-        color: white; 
-        font-weight: bold; 
-        font-size: 2.2rem; 
-        text-shadow: 3px 3px #ff0000;
-        margin-bottom: 20px; 
-        padding: 0 20px; 
-      }
-      #countdown { font-size: 6rem; color: white; font-family: 'Courier New', monospace; font-weight: 900; }
+      .glitch-text { color: white; font-weight: bold; font-size: 2.2rem; text-shadow: 4px 4px #ff0000; margin-bottom: 20px; text-align: center; }
+      #countdown { font-size: 10rem; color: white; font-family: Impact, sans-serif; }
       
-      #log {
-        width: 100%; max-width: 800px; height: 100px;
-        background: #000; border: 1px solid #555; margin-top: 20px;
-        padding: 10px; overflow-y: scroll; font-size: 0.85rem; color: #ccc;
-      }
+      #log { width: 100%; max-width: 800px; height: 100px; background: #000; border: 1px solid #555; margin-top: 20px; padding: 10px; overflow-y: scroll; font-size: 0.85rem; color: #ccc; }
     </style>
   </head>
   <body id="main-body">
 
     <div id="glitch-overlay">
       <div class="glitch-text">Hahaha you want to much money but bad boy</div>
-      <div style="color: #fff; letter-spacing: 2px; font-weight: bold;">SYSTEM ERROR: REBOOTING</div>
-      <div id="countdown">200</div>
+      <div id="countdown" class="jitter-text">200</div>
     </div>
 
     <h1>STEAL A MEME: TYCOON</h1>
@@ -163,13 +115,18 @@
         <h2>YOUR BASE</h2>
         <div id="my-units" class="unit-list"></div>
         <div class="actions">
+          <button id="sellModeBtn" class="btn-sell-mode" onclick="toggleSellMode()">SELL MODE: OFF</button>
+          
           <h3>MARKETPLACE</h3>
           <button class="btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50)</button>
           <button class="btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200)</button>
-          <button class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1000)</button>
-          <h3>UPGRADES</h3>
+          <button class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1k)</button>
+          <button class="btn-buy" style="border: 1px solid white;" onclick="buyUnit('Gigachad')">Gigachad ($10k | +$1k/s) ★</button>
+          
+          <h3>BASE UPGRADES</h3>
           <button id="diamondStatueBtn" class="btn-upgrade" onclick="buyUnit('Diamond Statue')">Diamond Statue ($5k) [0/15]</button>
           <button id="serverRoomBtn" class="btn-upgrade" onclick="buyUnit('Server Room')">Server Room ($100k) [0/5]</button>
+          
           <h3>⚠️ SECRET ⚠️</h3>
           <button class="btn-glitch" onclick="triggerGlitch()">GLITCHED COIN ($1)</button>
         </div>
@@ -183,7 +140,7 @@
       </div>
     </div>
 
-    <div id="log">Don't touch the Glitched Coin... seriously.</div>
+    <div id="log">The neighbor can't spawn Gigachads anymore. Only YOU can own them!</div>
 
     <script>
       let money = 100;
@@ -192,35 +149,100 @@
       let gameActive = true;
       let shieldActive = false;
       let shieldReady = true;
+      let sellMode = false;
 
       const unitTypes = {
         "Noob Cube": { cost: 50, mps: 2, icon: "🧊", permanent: false },
         "Vibe Cat": { cost: 200, mps: 10, icon: "🐱", permanent: false },
         "Golden Doge": { cost: 1000, mps: 60, icon: "🐕", permanent: false },
+        "Gigachad": { cost: 10000, mps: 1000, icon: "🗿", permanent: false, isElite: true },
         "Diamond Statue": { cost: 5000, mps: 300, icon: "💎", permanent: true, limit: 15 },
         "Server Room": { cost: 100000, mps: 5000, icon: "🖥️", permanent: true, limit: 5 }
       };
 
+      // Income Loop
       setInterval(() => {
         if (!gameActive) return;
         money += myUnits.reduce((acc, u) => acc + u.mps, 0);
         updateUI();
       }, 1000);
 
+      // Spawner Loop (NO GIGACHADS FOR NEIGHBOR)
       setInterval(() => {
         if (!gameActive) return;
-        const keys = ["Noob Cube", "Vibe Cat", "Golden Doge"];
-        const name = keys[Math.floor(Math.random() * keys.length)];
+        
+        // Neighbor steals YOUR stuff
+        const targets = myUnits.filter(u => !u.permanent);
+        if (targets.length > 0 && !shieldActive && Math.random() < 0.3) {
+           const victim = targets[Math.floor(Math.random() * targets.length)];
+           myUnits.splice(myUnits.indexOf(victim), 1);
+           enemyUnits.push(victim);
+           log(`The neighbor stole your ${victim.name}!`, "log-bad");
+        }
+        
+        // Spawn neighbor units (EXCLUDES GIGACHAD)
+        const commonKeys = ["Noob Cube", "Vibe Cat", "Golden Doge"];
+        const name = commonKeys[Math.floor(Math.random() * commonKeys.length)];
         enemyUnits.push({ ...unitTypes[name], name });
         updateUI();
-      }, 4500);
+      }, 5000);
+
+      function toggleSellMode() {
+        if (!gameActive) return;
+        sellMode = !sellMode;
+        const btn = document.getElementById("sellModeBtn");
+        const list = document.getElementById("my-units");
+        if (sellMode) {
+          btn.innerText = "SELL MODE: ON";
+          btn.classList.add("sell-mode-active");
+          list.classList.add("sell-cursor");
+        } else {
+          btn.innerText = "SELL MODE: OFF";
+          btn.classList.remove("sell-mode-active");
+          list.classList.remove("sell-cursor");
+        }
+      }
+
+      function sellItem(index) {
+        if (!gameActive || !sellMode) return;
+        const item = myUnits[index];
+        if (item.permanent) return; // Prevent selling statues
+        
+        const refund = Math.floor(item.cost * 0.5);
+        money += refund;
+        log(`Sold ${item.name} for $${refund}`, "money-text");
+        myUnits.splice(index, 1);
+        updateUI();
+      }
+
+      function buyUnit(name) {
+        if (!gameActive || sellMode) return;
+        const u = unitTypes[name];
+        if (u.limit && myUnits.filter(x => x.name === name).length >= u.limit) return;
+        if (money >= u.cost) {
+          money -= u.cost;
+          myUnits.push({ ...u, name });
+          updateUI();
+        }
+      }
+
+      function attemptSteal() {
+        if (!gameActive || enemyUnits.length === 0 || sellMode) return;
+        if (Math.random() > 0.5) {
+            myUnits.push(enemyUnits.pop());
+            log("Stole a meme from the neighbor!", "money-text");
+        } else if (money >= 25) {
+            money -= 25;
+            log("Caught! Paid $25 fine.", "log-bad");
+        }
+        updateUI();
+      }
 
       function triggerGlitch() {
         if (!gameActive || money < 1) return;
         money -= 1;
         gameActive = false;
-        
-        // Add the flashing background class
+        if (sellMode) toggleSellMode(); // Force off
         document.getElementById("main-body").classList.add("glitch-active-body");
         document.getElementById("glitch-overlay").style.display = "flex";
         
@@ -236,29 +258,10 @@
             updateUI();
           }
         }, 1000);
-        updateUI();
-      }
-
-      function buyUnit(name) {
-        if (!gameActive) return;
-        const u = unitTypes[name];
-        if (u.limit && myUnits.filter(x => x.name === name).length >= u.limit) return;
-        if (money >= u.cost) {
-          money -= u.cost;
-          myUnits.push({ ...u, name });
-          updateUI();
-        }
-      }
-
-      function attemptSteal() {
-        if (!gameActive || enemyUnits.length === 0) return;
-        if (Math.random() > 0.5) myUnits.push(enemyUnits.pop());
-        else if (money >= 25) money -= 25;
-        updateUI();
       }
 
       function toggleShield() {
-        if (!gameActive || !shieldReady) return;
+        if (!gameActive || !shieldReady || sellMode) return;
         shieldActive = true; shieldReady = false;
         setTimeout(() => { 
           shieldActive = false; 
@@ -272,24 +275,31 @@
         document.getElementById("money").innerText = `$${money.toLocaleString()}`;
         document.getElementById("income").innerText = gameActive ? `$${myUnits.reduce((acc, u) => acc + u.mps, 0).toLocaleString()}` : "$0";
         
-        const dsCount = myUnits.filter(u => u.name === "Diamond Statue").length;
-        document.getElementById("diamondStatueBtn").innerText = dsCount >= 15 ? "MAXED" : `Diamond Statue ($5k) [${dsCount}/15]`;
-        
-        const srCount = myUnits.filter(u => u.name === "Server Room").length;
-        document.getElementById("serverRoomBtn").innerText = srCount >= 5 ? "MAXED" : `Server Room ($100k) [${srCount}/5]`;
+        const container = document.getElementById("my-units");
+        container.innerHTML = "";
+        myUnits.forEach((u, index) => {
+          let d = document.createElement("div");
+          d.className = `unit ${u.permanent ? 'unit-permanent' : ''} ${u.isElite ? 'unit-elite' : ''}`;
+          d.innerText = `${u.icon} ${u.name}`;
+          d.onclick = () => sellItem(index);
+          container.appendChild(d);
+        });
 
-        const render = (id, list) => {
-          const el = document.getElementById(id);
-          el.innerHTML = "";
-          list.forEach(u => {
-            let d = document.createElement("div");
-            d.className = `unit ${u.permanent ? 'unit-permanent' : ''}`;
-            d.innerText = `${u.icon} ${u.name}`;
-            el.appendChild(d);
-          });
-        };
-        render("my-units", myUnits);
-        render("enemy-units", enemyUnits);
+        const enemyContainer = document.getElementById("enemy-units");
+        enemyContainer.innerHTML = "";
+        enemyUnits.forEach(u => {
+          let d = document.createElement("div");
+          d.className = `unit ${u.isElite ? 'unit-elite' : ''}`;
+          d.innerText = `${u.icon} ${u.name}`;
+          enemyContainer.appendChild(d);
+        });
+      }
+
+      function log(msg, type) {
+        const p = document.createElement("div");
+        p.innerText = `> ${msg}`;
+        p.className = type;
+        document.getElementById("log").prepend(p);
       }
       updateUI();
     </script>
