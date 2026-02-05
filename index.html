@@ -12,6 +12,7 @@
         --money-color: #00ff88;
         --shield-color: #00ccff;
         --upgrade-color: #ffcc00; 
+        --glitch-color: #ff0000;
       }
 
       body {
@@ -108,14 +109,19 @@
         transition: 0.1s;
       }
 
-      button:active { transform: scale(0.95); }
+      button:disabled {
+        background-color: #555 !important;
+        cursor: not-allowed;
+        color: #888 !important;
+      }
+
+      button:active:not(:disabled) { transform: scale(0.95); }
 
       .btn-buy { background-color: var(--money-color); color: #000; }
       .btn-upgrade { background-color: var(--upgrade-color); color: #000; }
       .btn-steal { background-color: var(--accent-color); color: white; }
       .btn-shield { background-color: var(--shield-color); width: 100%; padding: 15px; margin-bottom: 20px; }
-
-      .shield-active { border-color: var(--shield-color) !important; box-shadow: 0 0 20px var(--shield-color); }
+      .btn-glitch { background-color: var(--glitch-color); color: white; border: 2px dashed white; }
 
       #log {
         width: 100%;
@@ -131,11 +137,31 @@
       }
 
       .log-bad { color: var(--accent-color); }
-      .log-good { color: var(--money-color); }
-      .log-special { color: var(--upgrade-color); }
+
+      #glitch-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95);
+        z-index: 1000;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .glitch-text { color: var(--glitch-color); font-weight: bold; font-size: 2rem; margin-bottom: 20px; padding: 0 20px; }
+      #countdown { font-size: 5rem; color: white; font-family: 'Courier New', monospace; }
     </style>
   </head>
   <body>
+
+    <div id="glitch-overlay">
+      <div class="glitch-text">Hahaha you want to much money but bad boy</div>
+      <div style="color: #666; letter-spacing: 2px;">RESTORING SYSTEM...</div>
+      <div id="countdown">200</div>
+    </div>
+
     <h1>STEAL A MEME: TYCOON</h1>
 
     <div id="hud">
@@ -154,15 +180,23 @@
 
         <div class="actions">
           <h3>MARKETPLACE (Stealable)</h3>
-          <button class="btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50 | +$2/s)</button>
-          <button class="btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200 | +$10/s)</button>
-          <button class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1000 | +$60/s)</button>
+          <button class="game-btn btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50 | +$2/s)</button>
+          <button class="game-btn btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200 | +$10/s)</button>
+          <button class="game-btn btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1000 | +$60/s)</button>
           
           <h3>BASE UPGRADES (Permanent)</h3>
-          <button class="btn-upgrade" onclick="buyUnit('Security Bot')">Security Bot ($400 | +$15/s)</button>
-          <button class="btn-upgrade" onclick="buyUnit('Neon Sign')">Neon Sign ($800 | +$40/s)</button>
-          <button class="btn-upgrade" onclick="buyUnit('Diamond Statue')">Diamond Statue ($5000 | +$300/s)</button>
-          <button class="btn-upgrade" onclick="buyUnit('Server Room')">Server Room ($100,000 | +$5,000/s)</button>
+          <button class="game-btn btn-upgrade" onclick="buyUnit('Security Bot')">Security Bot ($400 | +$15/s)</button>
+          <button id="diamondStatueBtn" class="game-btn btn-upgrade" onclick="buyUnit('Diamond Statue')">
+            Diamond Statue ($5,000 | +$300/s) [0/15]
+          </button>
+          <button id="serverRoomBtn" class="game-btn btn-upgrade" onclick="buyUnit('Server Room')">
+            Server Room ($100,000 | +$5,000/s) [0/5]
+          </button>
+
+          <h3>⚠️ SECRET ⚠️</h3>
+          <button class="game-btn btn-glitch" onclick="triggerGlitch()">
+            GLITCHED COIN ($1 | +$1,000,000,000/s)
+          </button>
         </div>
       </div>
 
@@ -170,17 +204,18 @@
         <h2>NEIGHBOR'S BASE</h2>
         <div id="enemy-units" class="unit-list"></div>
         <div class="actions">
-          <button class="btn-steal" onclick="attemptSteal()">🏃 ATTEMPT TO STEAL UNIT</button>
+          <button id="stealBtn" class="game-btn btn-steal" onclick="attemptSteal()">🏃 ATTEMPT TO STEAL UNIT</button>
         </div>
       </div>
     </div>
 
-    <div id="log">Welcome! Save up for the $100k Server Room to become unstoppable.</div>
+    <div id="log">Tip: The Secret item is a scam! Do not buy it!</div>
 
     <script>
       let money = 100;
       let myUnits = [];
       let enemyUnits = [];
+      let gameActive = true;
       let shieldActive = false;
       let shieldReady = true;
 
@@ -189,112 +224,115 @@
         "Vibe Cat": { cost: 200, mps: 10, icon: "🐱", permanent: false },
         "Golden Doge": { cost: 1000, mps: 60, icon: "🐕", permanent: false },
         "Security Bot": { cost: 400, mps: 15, icon: "🤖", permanent: true },
-        "Neon Sign": { cost: 800, mps: 40, icon: "💡", permanent: true },
-        "Diamond Statue": { cost: 5000, mps: 300, icon: "💎", permanent: true },
-        "Server Room": { cost: 100000, mps: 5000, icon: "🖥️", permanent: true }
+        "Diamond Statue": { cost: 5000, mps: 300, icon: "💎", permanent: true, limit: 15 },
+        "Server Room": { cost: 100000, mps: 5000, icon: "🖥️", permanent: true, limit: 5 }
       };
 
+      // Main Loop
       setInterval(() => {
+        if (!gameActive) return;
         let income = myUnits.reduce((acc, u) => acc + u.mps, 0);
         money += income;
         updateUI();
       }, 1000);
 
+      // Enemy Logic
       setInterval(() => {
+        if (!gameActive) return;
         const stealableNames = Object.keys(unitTypes).filter(name => !unitTypes[name].permanent);
         const randomName = stealableNames[Math.floor(Math.random() * stealableNames.length)];
-        const stats = unitTypes[randomName];
-        enemyUnits.push({ ...stats, name: randomName });
+        enemyUnits.push({ ...unitTypes[randomName], name: randomName });
         updateUI();
       }, 4500);
 
-      setInterval(() => {
-        const stealableFromPlayer = myUnits.filter(u => !u.permanent);
-        if (stealableFromPlayer.length > 0) {
-          if (shieldActive) {
-            log("🛡️ Enemy hit your SHIELD!", "neutral");
-          } else if (Math.random() < 0.35) {
-            const targetUnit = stealableFromPlayer[Math.floor(Math.random() * stealableFromPlayer.length)];
-            const actualIndex = myUnits.indexOf(targetUnit);
-            const stolen = myUnits.splice(actualIndex, 1)[0];
-            enemyUnits.push(stolen);
-            log(`🚨 ALERT! Neighbor stole your ${stolen.name}!`, "log-bad");
+      function triggerGlitch() {
+        if (!gameActive || money < 1) return;
+        
+        // Take the $1 cost but give NO income
+        money -= 1;
+        gameActive = false;
+        updateUI();
+
+        document.getElementById("glitch-overlay").style.display = "flex";
+        
+        let timeLeft = 200;
+        const countdownEl = document.getElementById("countdown");
+        
+        const timer = setInterval(() => {
+          timeLeft--;
+          countdownEl.innerText = timeLeft;
+          
+          if (timeLeft <= 0) {
+            clearInterval(timer);
+            gameActive = true;
+            document.getElementById("glitch-overlay").style.display = "none";
+            log("System recovered. Don't do that again!", "log-bad");
             updateUI();
           }
-        }
-      }, 7500);
+        }, 1000);
+      }
 
       function buyUnit(name) {
+        if (!gameActive) return;
         const stats = unitTypes[name];
+        if (stats.limit && myUnits.filter(u => u.name === name).length >= stats.limit) return;
         if (money >= stats.cost) {
           money -= stats.cost;
           myUnits.push({ ...stats, name: name });
-          log(`Purchased ${name}!`, stats.permanent ? "log-special" : "log-good");
           updateUI();
-        } else {
-          log(`You need $${stats.cost - money} more for that!`, "log-bad");
         }
       }
 
       function attemptSteal() {
-        if (enemyUnits.length === 0) {
-          log("The neighbor is empty-handed.", "neutral");
-          return;
-        }
+        if (!gameActive || enemyUnits.length === 0) return;
         if (Math.random() > 0.5) {
-          const stolen = enemyUnits.pop();
-          myUnits.push(stolen);
-          log(`🏃💨 SUCCESS! You swiped a ${stolen.name}!`, "log-good");
+          myUnits.push(enemyUnits.pop());
         } else {
-          log("❌ CAUGHT! You paid $25 in fines.", "log-bad");
           if (money >= 25) money -= 25;
         }
         updateUI();
       }
 
       function toggleShield() {
-        if (!shieldReady) return;
-        shieldActive = true;
-        shieldReady = false;
-        document.getElementById("player-zone").classList.add("shield-active");
-        const btn = document.getElementById("shieldBtn");
-        btn.innerHTML = "SHIELD ACTIVE!";
-        setTimeout(() => {
-          shieldActive = false;
-          document.getElementById("player-zone").classList.remove("shield-active");
-          btn.innerHTML = "RECHARGING...";
-          setTimeout(() => {
-            shieldReady = true;
-            btn.innerHTML = "ACTIVATE SHIELD (Ready)";
-          }, 12000);
+        if (!gameActive || !shieldReady) return;
+        shieldActive = true; shieldReady = false;
+        setTimeout(() => { 
+          shieldActive = false; 
+          setTimeout(() => { shieldReady = true; updateUI(); }, 12000);
+          updateUI();
         }, 8000);
+        updateUI();
       }
 
       function updateUI() {
         document.getElementById("money").innerText = `$${money.toLocaleString()}`;
-        document.getElementById("income").innerText = `$${myUnits.reduce((acc, u) => acc + u.mps, 0).toLocaleString()}`;
+        document.getElementById("income").innerText = gameActive ? `$${myUnits.reduce((acc, u) => acc + u.mps, 0).toLocaleString()}` : "$0";
+        
+        const dsCount = myUnits.filter(u => u.name === "Diamond Statue").length;
+        document.getElementById("diamondStatueBtn").innerHTML = `Diamond Statue ($5,000 | +$300/s) [${dsCount}/15]`;
+        
+        const srCount = myUnits.filter(u => u.name === "Server Room").length;
+        document.getElementById("serverRoomBtn").innerHTML = `Server Room ($100,000 | +$5,000/s) [${srCount}/5]`;
 
-        const render = (containerId, list) => {
-          const container = document.getElementById(containerId);
-          container.innerHTML = "";
+        const render = (id, list) => {
+          const el = document.getElementById(id);
+          el.innerHTML = "";
           list.forEach(u => {
-            let div = document.createElement("div");
-            div.className = `unit ${u.permanent ? 'unit-permanent' : ''}`;
-            div.innerText = `${u.icon} ${u.name}`;
-            container.appendChild(div);
+            let d = document.createElement("div");
+            d.className = `unit ${u.permanent ? 'unit-permanent' : ''}`;
+            d.innerText = `${u.icon} ${u.name}`;
+            el.appendChild(d);
           });
         };
-
         render("my-units", myUnits);
         render("enemy-units", enemyUnits);
       }
 
       function log(msg, type) {
-        const logBox = document.getElementById("log");
         const p = document.createElement("div");
         p.innerText = `> ${msg}`;
         p.className = type;
-        logBox.prepend(p);
+        document.getElementById("log").prepend(p);
       }
       
       updateUI();
