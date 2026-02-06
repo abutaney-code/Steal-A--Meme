@@ -12,66 +12,83 @@
         --money-color: #00ff88;
         --upgrade-color: #ffcc00; 
         --pet-color: #ff88ff;
+        --friend-color: #00d4ff;
         --lava-color: #ff4500;
-        --ice-color: #00f2ff;
-        --earth-color: #8bff5e;
-        --ufo-color: #cc00ff;
-        --taco-color: #ffcc33;
       }
 
       body {
         font-family: "Courier New", Courier, monospace;
         background-color: var(--bg-color);
         color: var(--text-color);
-        margin: 0; padding: 20px;
+        margin: 0; padding: 10px;
         display: flex; flex-direction: column; align-items: center;
-      }
-
-      #event-banner {
-        width: 100%; max-width: 600px; background: #333; color: white;
-        text-align: center; padding: 15px; border-radius: 10px;
-        margin-bottom: 15px; font-weight: bold; display: none;
-        border: 3px solid white; font-size: 1.1rem;
       }
 
       #hud {
         display: flex; justify-content: space-between;
-        width: 100%; max-width: 600px;
+        width: 100%; max-width: 1200px;
         background: #333; padding: 15px; border-radius: 10px;
         border: 2px solid var(--text-color); margin-bottom: 20px;
-        font-size: 1.2rem; font-weight: bold;
+        font-size: 1.2rem; font-weight: bold; box-sizing: border-box;
       }
 
       .money-text { color: var(--money-color); }
-      .lava-btn { background-color: var(--lava-color) !important; color: white !important; }
       
       #game-board {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-        width: 100%; max-width: 950px;
+        display: grid; 
+        grid-template-columns: 260px 1fr 260px;
+        gap: 15px;
+        width: 100%; max-width: 1300px;
       }
 
-      .zone { background: #2a2a2a; border: 2px solid #555; border-radius: 10px; padding: 15px; min-height: 450px; }
-      .unit-list { display: flex; flex-wrap: wrap; gap: 5px; max-height: 250px; overflow-y: auto; padding: 5px; }
+      .zone { 
+        background: #2a2a2a; 
+        border: 2px solid #555; 
+        border-radius: 10px; 
+        padding: 15px; 
+        min-height: 550px; 
+        display: flex;
+        flex-direction: column;
+      }
 
-      .unit { background: #444; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; border: 1px solid transparent; }
-      .unit-pet { border-color: var(--pet-color); color: var(--pet-color); font-weight: bold; }
-      .unit-boosted { border-color: var(--lava-color); box-shadow: 0 0 8px var(--lava-color); }
+      .unit-list { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 5px; 
+        flex-grow: 1;
+        max-height: 250px; 
+        overflow-y: auto; 
+        padding: 10px; 
+        background: #1e1e1e;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        border: 1px inset #444;
+      }
+
+      .unit { background: #444; padding: 5px 8px; border-radius: 5px; font-size: 0.75rem; border: 1px solid transparent; height: fit-content; }
+      .unit-pet { border-color: var(--pet-color); color: var(--pet-color); }
+      .unit-friend { border-color: var(--friend-color); color: var(--friend-color); font-weight: bold; }
       .unit-upgrade { border-color: var(--upgrade-color); background: #3d3411; }
 
-      .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
-      button { padding: 8px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; }
+      .actions { display: flex; flex-direction: column; gap: 8px; }
+      button { padding: 8px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; transition: 0.2s; font-size: 0.85rem; }
+      button:hover { opacity: 0.8; transform: scale(1.02); }
+      button:disabled { background-color: #555 !important; cursor: not-allowed; opacity: 0.6; }
+      
       .btn-buy { background-color: var(--money-color); color: #000; }
-      .btn-pet { background-color: var(--pet-color); color: #000; font-size: 0.75rem; }
+      .btn-pet { background-color: var(--pet-color); color: #000; }
+      .btn-friend { background-color: var(--friend-color); color: #000; }
       .btn-up { background-color: var(--upgrade-color); color: #000; }
 
-      #log { width: 100%; max-width: 950px; height: 100px; background: #000; border: 1px solid #555; margin-top: 20px; padding: 10px; overflow-y: scroll; font-size: 0.85rem; color: #ccc; }
+      #log { width: 100%; max-width: 1200px; height: 100px; background: #000; border: 1px solid #555; margin-top: 20px; padding: 10px; overflow-y: scroll; font-size: 0.85rem; color: #ccc; box-sizing: border-box; }
+      
+      h2 { margin-top: 0; font-size: 1.2rem; text-align: center; border-bottom: 1px solid #444; padding-bottom: 5px; }
+      h3 { font-size: 0.9rem; margin: 10px 0 5px 0; }
     </style>
   </head>
   <body>
 
     <h1>STEAL A MEME: TYCOON</h1>
-
-    <div id="event-banner">EVENT ACTIVE</div>
 
     <div id="hud">
       <div>Cash: <span id="money" class="money-text">$0</span></div>
@@ -80,12 +97,25 @@
 
     <div id="game-board">
       <div class="zone">
+        <h2>FRIENDS</h2>
+        <p style="font-size: 0.7rem; color: var(--friend-color); text-align: center;">$75,000 | +7.5% Income Each</p>
+        <div class="actions">
+          <button id="btn-Adi" class="btn-friend" onclick="buyUnit('Adi')">Hire Adi</button>
+          <button id="btn-Tarik" class="btn-friend" onclick="buyUnit('Tarik')">Hire Tarik</button>
+          <button id="btn-Wesley" class="btn-friend" onclick="buyUnit('Wesley')">Hire Wesley</button>
+          <button id="btn-Luke" class="btn-friend" onclick="buyUnit('Luke')">Hire Luke</button>
+          <button id="btn-Chase" class="btn-friend" onclick="buyUnit('Chase')">Hire Chase</button>
+        </div>
+        <p style="font-size: 0.65rem; margin-top: 15px; color: #888;">Friends are permanent and cannot be stolen.</p>
+      </div>
+
+      <div class="zone">
         <h2>YOUR BASE</h2>
         <div id="my-units" class="unit-list"></div>
         <div class="actions">
           <button id="sellModeBtn" class="btn-buy" style="background:#444;color:white" onclick="toggleSellMode()">SELL MODE: OFF</button>
           
-          <h3>PETS ($30,000 | +5%)</h3>
+          <h3 id="pet-header">PETS ($30k | +5%) [0/3]</h3>
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
             <button class="btn-pet" onclick="buyUnit('Tralalao tralala')">Tralalao</button>
             <button class="btn-pet" onclick="buyUnit('Tung tung tung sahur')">Tung</button>
@@ -95,128 +125,86 @@
           </div>
 
           <h3>MARKET & UPGRADES</h3>
-          <button id="btn-NoobCube" class="btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50)</button>
-          <button id="btn-VibeCat" class="btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200)</button>
-          <button id="btn-GoldenDoge" class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1k)</button>
-          <button id="btn-Gigachad" class="btn-buy" style="border: 2px solid white" onclick="buyUnit('Gigachad')">Gigachad ($10k)</button>
-          <button id="btn-DiamondStatue" class="btn-up" onclick="buyUnit('Diamond Statue')">Diamond Statue ($5k)</button>
-          <button id="btn-ServerRoom" class="btn-up" onclick="buyUnit('Server Room')">Server Room ($100k)</button>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+            <button id="btn-NoobCube" class="btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube</button>
+            <button id="btn-VibeCat" class="btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat</button>
+            <button id="btn-GoldenDoge" class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge</button>
+            <button id="btn-Gigachad" class="btn-buy" onclick="buyUnit('Gigachad')">Gigachad</button>
+          </div>
+          <button id="btn-DiamondStatue" class="btn-up" onclick="buyUnit('Diamond Statue')">Diamond Statue</button>
+          <button id="btn-ServerRoom" class="btn-up" onclick="buyUnit('Server Room')">Server Room</button>
         </div>
       </div>
 
       <div class="zone">
         <h2>NEIGHBOR</h2>
         <div id="enemy-units" class="unit-list"></div>
-        <button class="btn-buy" style="background:var(--accent-color);color:white;width:100%;margin-top:10px" onclick="attemptSteal()">🏃 RAID NEIGHBOR</button>
+        <div class="actions">
+            <button id="raid-btn" class="btn-buy" style="background:var(--accent-color);color:white;" onclick="attemptSteal()">🏃 RAID NEIGHBOR</button>
+            <p style="font-size: 0.65rem; color: #aaa; text-align: center; margin-top: 10px;">
+                Raiding has a 50% chance of success.<br>Failure costs a $50 fine.
+            </p>
+        </div>
       </div>
     </div>
 
-    <div id="log">All pets now cost $30k and give a 5% boost!</div>
+    <div id="log">Welcome! Hire friends and collect memes to increase your income.</div>
 
     <script>
       let money = 100;
       let myUnits = [];
       let enemyUnits = [];
       let sellMode = false;
-      let currentEvent = null;
-      let lavaItems = [];
 
       const unitTypes = {
-        "Noob Cube": { id: "NoobCube", cost: 50, mps: 2, icon: "🧊", canNeighborHave: true },
-        "Vibe Cat": { id: "VibeCat", cost: 200, mps: 10, icon: "🐱", canNeighborHave: true },
-        "Golden Doge": { id: "GoldenDoge", cost: 1000, mps: 60, icon: "🐕", canNeighborHave: true },
-        "Gigachad": { id: "Gigachad", cost: 10000, mps: 1000, icon: "🗿", canNeighborHave: false },
-        "Diamond Statue": { id: "DiamondStatue", cost: 5000, mps: 300, icon: "💎", permanent: true },
-        "Server Room": { id: "ServerRoom", cost: 100000, mps: 5000, icon: "🖥️", permanent: true },
-        // Updated Pets: All 30k and 5% boost
+        "Noob Cube": { id: "NoobCube", cost: 50, mps: 2, icon: "🧊" },
+        "Vibe Cat": { id: "VibeCat", cost: 200, mps: 10, icon: "🐱" },
+        "Golden Doge": { id: "GoldenDoge", cost: 1000, mps: 60, icon: "🐕" },
+        "Gigachad": { id: "Gigachad", cost: 10000, mps: 1000, icon: "🗿" },
+        "Diamond Statue": { id: "DiamondStatue", cost: 5000, mps: 300, icon: "💎", permanent: true, limit: 15 },
+        "Server Room": { id: "ServerRoom", cost: 100000, mps: 5000, icon: "🖥️", permanent: true, limit: 5 },
+        // Pets
         "Tralalao tralala": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
         "Tung tung tung sahur": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
         "Tata ta sahur": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
         "Br br patpin": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
-        "Mateo": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true }
+        "Mateo": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
+        // Friends
+        "Adi": { id: "Adi", cost: 75000, mps: 0, multiplier: 0.075, icon: "👤", isFriend: true, limit: 1 },
+        "Tarik": { id: "Tarik", cost: 75000, mps: 0, multiplier: 0.075, icon: "👤", isFriend: true, limit: 1 },
+        "Wesley": { id: "Wesley", cost: 75000, mps: 0, multiplier: 0.075, icon: "👤", isFriend: true, limit: 1 },
+        "Luke": { id: "Luke", cost: 75000, mps: 0, multiplier: 0.075, icon: "👤", isFriend: true, limit: 1 },
+        "Chase": { id: "Chase", cost: 75000, mps: 0, multiplier: 0.075, icon: "👤", isFriend: true, limit: 1 }
       };
 
-      setInterval(startRandomEvent, 600000);
-
-      function startRandomEvent() {
-        const events = ['LAVA', 'ICE', 'EARTH', 'UFO', 'TACO'];
-        const choice = events[Math.floor(Math.random() * events.length)];
-        const banner = document.getElementById('event-banner');
-        banner.style.display = "block";
-        currentEvent = choice;
-
-        if (choice === 'LAVA') {
-          banner.innerText = "🌋 FIRE SALE: +10% BOOST ON LAVA ITEMS!";
-          banner.style.borderColor = "var(--lava-color)";
-          const ids = ["NoobCube", "VibeCat", "GoldenDoge", "Gigachad", "DiamondStatue"];
-          lavaItems = ids.sort(() => 0.5 - Math.random()).slice(0, 2);
-          lavaItems.forEach(id => {
-              const el = document.getElementById(`btn-${id}`);
-              if(el) el.classList.add('lava-btn');
-          });
-        } else {
-          banner.innerText = choice + " EVENT ACTIVE!";
-          banner.style.borderColor = "white";
-        }
-
-        setTimeout(() => {
-          currentEvent = null;
-          banner.style.display = "none";
-          lavaItems.forEach(id => {
-              const el = document.getElementById(`btn-${id}`);
-              if(el) el.classList.remove('lava-btn');
-          });
-          lavaItems = [];
-        }, 45000);
+      function getCurrentCost(name) {
+        let u = unitTypes[name];
+        if (u.isPet || u.isFriend) return u.cost;
+        const ownedCount = myUnits.filter(item => item.name === name).length;
+        return u.cost * Math.pow(2, ownedCount);
       }
 
       function buyUnit(name) {
         let u = {...unitTypes[name]};
-        // Pets don't get Earth discount as they are in the Sanctuary
-        let cost = (currentEvent === 'EARTH' && !u.isPet) ? u.cost * 0.5 : u.cost;
-        let boost = (lavaItems.includes(u.id)) ? 0.10 : 0;
+        const currentCount = myUnits.filter(item => item.name === name).length;
+
+        if (u.isPet && myUnits.filter(item => item.isPet).length >= 3) {
+          log("Pet slots full! (Max 3)", "orange"); return;
+        }
+
+        if (u.limit && currentCount >= u.limit) {
+          log(`You already have max ${name}!`, "orange"); return;
+        }
+
+        let cost = getCurrentCost(name);
 
         if (money >= cost) {
           money -= cost;
-          myUnits.push({ ...u, name, multiplier: (u.multiplier || 0) + boost, isLava: boost > 0 });
+          myUnits.push({ ...u, name });
           updateUI();
-        } else { log("Insufficient funds!", "red"); }
-      }
-
-      setInterval(() => {
-        let base = myUnits.reduce((acc, u) => acc + u.mps, 0);
-        let m = 1 + myUnits.reduce((acc, u) => acc + (u.multiplier || 0), 0);
-        if(currentEvent === 'ICE') m *= 0.5;
-        if(currentEvent === 'TACO') m *= 1.2;
-        money += Math.floor(base * m);
-        updateUI();
-      }, 1000);
-
-      setInterval(() => {
-        const possible = Object.keys(unitTypes).filter(k => unitTypes[k].canNeighborHave);
-        const name = possible[Math.floor(Math.random() * possible.length)];
-        enemyUnits.push({ ...unitTypes[name], name });
-
-        const stealable = myUnits.filter(u => !u.permanent && !u.isPet && u.name !== "Gigachad");
-        if (stealable.length > 0 && Math.random() < 0.2 && currentEvent !== 'ICE') {
-          const victim = stealable[Math.floor(Math.random() * stealable.length)];
-          myUnits.splice(myUnits.indexOf(victim), 1);
-          enemyUnits.push(victim);
-          log(`The neighbor stole your ${victim.name}!`, "red");
-        }
-        updateUI();
-      }, 10000);
-
-      function attemptSteal() {
-        if (enemyUnits.length > 0) {
-          if (Math.random() > 0.5) {
-            myUnits.push(enemyUnits.pop());
-            log("Steal successful!", "green");
-          } else {
-            money = Math.max(0, money - 50);
-            log("Caught! Paid $50 fine.", "red");
-          }
-          updateUI();
+          log(`Hired/Bought ${name} for $${cost.toLocaleString()}!`, "green");
+        } else { 
+          log(`Need $${cost.toLocaleString()} for ${name}!`, "red"); 
         }
       }
 
@@ -226,30 +214,68 @@
       }
 
       function sellItem(i) {
-        if (!sellMode || myUnits[i].permanent) return;
+        if (!sellMode || myUnits[i].permanent || myUnits[i].isFriend) return;
         money += Math.floor(unitTypes[myUnits[i].name].cost * 0.5);
         myUnits.splice(i, 1);
         updateUI();
       }
 
+      function attemptSteal() {
+        if (enemyUnits.length === 0) {
+            log("Neighbor has nothing to steal yet!", "gray");
+            return;
+        }
+
+        if (Math.random() > 0.5) {
+          const stolen = enemyUnits.pop();
+          myUnits.push(stolen);
+          log(`Successfully raided the neighbor and took ${stolen.name}!`, "green");
+        } else {
+          money = Math.max(0, money - 50);
+          log("The neighbor caught you! Paid a $50 fine.", "red");
+        }
+        updateUI();
+      }
+
       function updateUI() {
         document.getElementById("money").innerText = `$${money.toLocaleString()}`;
-        let base = myUnits.reduce((acc, u) => acc + u.mps, 0);
+        let base = myUnits.reduce((acc, u) => acc + (u.mps || 0), 0);
         let m = 1 + myUnits.reduce((acc, u) => acc + (u.multiplier || 0), 0);
-        if(currentEvent === 'ICE') m *= 0.5;
-        if(currentEvent === 'TACO') m *= 1.2;
         document.getElementById("income").innerText = `$${Math.floor(base * m).toLocaleString()}`;
         
+        const petCount = myUnits.filter(u => u.isPet).length;
+        document.getElementById("pet-header").innerText = `PETS ($30k | +5%) [${petCount}/3]`;
+
+        // Update All Market Buttons
+        Object.keys(unitTypes).forEach(name => {
+            const u = unitTypes[name];
+            const btn = document.getElementById(`btn-${u.id}`);
+            if (btn) {
+                if (u.isFriend) {
+                    const owned = myUnits.some(item => item.name === name);
+                    btn.disabled = owned;
+                    btn.innerText = owned ? `${name} (Hired)` : `Hire ${name} ($75k)`;
+                } else if (!u.isPet) {
+                    const cost = getCurrentCost(name);
+                    const count = myUnits.filter(item => item.name === name).length;
+                    const limitTxt = u.limit ? `[${count}/${u.limit}]` : `[x${count}]`;
+                    btn.innerText = `${name} ($${cost.toLocaleString()}) ${limitTxt}`;
+                }
+            }
+        });
+
+        // Render My Units
         const container = document.getElementById("my-units");
         container.innerHTML = "";
         myUnits.forEach((u, i) => {
           let d = document.createElement("div");
-          d.className = `unit ${u.isPet?'unit-pet':''} ${u.isLava?'unit-boosted':''} ${u.permanent?'unit-upgrade':''}`;
+          d.className = `unit ${u.isPet?'unit-pet':''} ${u.isFriend?'unit-friend':''} ${u.permanent?'unit-upgrade':''}`;
           d.innerText = `${u.icon} ${u.name}`;
-          d.onclick = () => sellItem(i);
+          if (!u.isFriend && !u.permanent) d.onclick = () => sellItem(i);
           container.appendChild(d);
         });
 
+        // Render Neighbor Units
         const eContainer = document.getElementById("enemy-units");
         eContainer.innerHTML = "";
         enemyUnits.forEach(u => {
@@ -263,8 +289,28 @@
       function log(msg, color) {
         const p = document.createElement("div");
         p.innerText = `> ${msg}`; p.style.color = color;
-        document.getElementById("log").prepend(p);
+        const logBox = document.getElementById("log");
+        logBox.prepend(p);
       }
+
+      // Money Generation
+      setInterval(() => {
+        let base = myUnits.reduce((acc, u) => acc + (u.mps || 0), 0);
+        let m = 1 + myUnits.reduce((acc, u) => acc + (u.multiplier || 0), 0);
+        money += Math.floor(base * m);
+        updateUI();
+      }, 1000);
+
+      // Neighbor Activity
+      setInterval(() => {
+        if (enemyUnits.length < 15) {
+            const pool = ["Noob Cube", "Vibe Cat", "Golden Doge"];
+            const randomName = pool[Math.floor(Math.random() * pool.length)];
+            enemyUnits.push({ ...unitTypes[randomName], name: randomName });
+            updateUI();
+        }
+      }, 8000);
+
       updateUI();
     </script>
   </body>
