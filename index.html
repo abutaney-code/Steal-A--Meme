@@ -10,9 +10,13 @@
         --text-color: #ffffff;
         --accent-color: #ff0055;
         --money-color: #00ff88;
-        --shield-color: #00ccff;
         --upgrade-color: #ffcc00; 
-        --glitch-color: #ff0000;
+        --pet-color: #ff88ff;
+        --lava-color: #ff4500;
+        --ice-color: #00f2ff;
+        --earth-color: #8bff5e;
+        --ufo-color: #cc00ff;
+        --taco-color: #ffcc33;
       }
 
       body {
@@ -21,28 +25,14 @@
         color: var(--text-color);
         margin: 0; padding: 20px;
         display: flex; flex-direction: column; align-items: center;
-        transition: background 0.1s; overflow-x: hidden;
       }
 
-      @keyframes glitch-bg {
-        0% { background-color: #ff0000; }
-        25% { background-color: #00ff00; }
-        50% { background-color: #0000ff; }
-        75% { background-color: #ffff00; }
-        100% { background-color: #ff00ff; }
+      #event-banner {
+        width: 100%; max-width: 600px; background: #333; color: white;
+        text-align: center; padding: 15px; border-radius: 10px;
+        margin-bottom: 15px; font-weight: bold; display: none;
+        border: 3px solid white; font-size: 1.1rem;
       }
-
-      .glitch-active-body { animation: glitch-bg 0.15s infinite !important; }
-
-      @keyframes jitter {
-        0% { transform: translate(0,0) scale(1) rotate(0deg); }
-        25% { transform: translate(12px, -12px) scale(1.4) rotate(8deg); }
-        50% { transform: translate(-12px, 12px) scale(0.6) rotate(-8deg); }
-        75% { transform: translate(8px, 8px) scale(1.2) rotate(4deg); }
-        100% { transform: translate(0,0) scale(1) rotate(0deg); }
-      }
-
-      .jitter-text { animation: jitter 0.04s infinite; display: inline-block; }
 
       #hud {
         display: flex; justify-content: space-between;
@@ -53,252 +43,226 @@
       }
 
       .money-text { color: var(--money-color); }
-
+      .lava-btn { background-color: var(--lava-color) !important; color: white !important; }
+      
       #game-board {
         display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-        width: 100%; max-width: 800px;
+        width: 100%; max-width: 950px;
       }
 
-      .zone { background: #2a2a2a; border: 2px solid #555; border-radius: 10px; padding: 15px; min-height: 350px; }
+      .zone { background: #2a2a2a; border: 2px solid #555; border-radius: 10px; padding: 15px; min-height: 450px; }
       .unit-list { display: flex; flex-wrap: wrap; gap: 5px; max-height: 250px; overflow-y: auto; padding: 5px; }
 
-      .unit { background: #444; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; position: relative; }
-
-      /* Sell Mode Visuals */
-      .sell-cursor .unit:not(.unit-permanent) { cursor: pointer; border: 1px dashed red; }
-      .sell-cursor .unit:not(.unit-permanent):hover { background: #600; }
-      .sell-cursor .unit:not(.unit-permanent):hover::after { content: " 💰SELL"; color: #00ff88; font-weight: bold; }
-
-      .unit-permanent { border: 1px solid var(--upgrade-color); background: #3d3411; box-shadow: 0 0 8px var(--upgrade-color); }
-      .unit-elite { border: 2px solid #ffffff; background: #000; box-shadow: 0 0 12px #fff; font-weight: bold; }
+      .unit { background: #444; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; border: 1px solid transparent; }
+      .unit-pet { border-color: var(--pet-color); color: var(--pet-color); font-weight: bold; }
+      .unit-boosted { border-color: var(--lava-color); box-shadow: 0 0 8px var(--lava-color); }
+      .unit-upgrade { border-color: var(--upgrade-color); background: #3d3411; }
 
       .actions { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
-
       button { padding: 8px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; }
       .btn-buy { background-color: var(--money-color); color: #000; }
-      .btn-upgrade { background-color: var(--upgrade-color); color: #000; }
-      .btn-steal { background-color: var(--accent-color); color: white; }
-      .btn-shield { background-color: var(--shield-color); width: 100%; padding: 15px; margin-bottom: 20px; }
-      .btn-glitch { background-color: var(--glitch-color); color: white; border: 2px dashed white; }
-      .btn-sell-mode { background-color: #444; color: white; border: 2px solid #777; margin-bottom: 5px; }
-      .sell-mode-active { background-color: #ff0000 !important; border: 2px solid white !important; }
+      .btn-pet { background-color: var(--pet-color); color: #000; font-size: 0.75rem; }
+      .btn-up { background-color: var(--upgrade-color); color: #000; }
 
-      #glitch-overlay {
-        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.92); z-index: 1000; flex-direction: column;
-        justify-content: center; align-items: center;
-      }
-      .glitch-text { color: white; font-weight: bold; font-size: 2.2rem; text-shadow: 4px 4px #ff0000; margin-bottom: 20px; text-align: center; }
-      #countdown { font-size: 10rem; color: white; font-family: Impact, sans-serif; }
-      
-      #log { width: 100%; max-width: 800px; height: 100px; background: #000; border: 1px solid #555; margin-top: 20px; padding: 10px; overflow-y: scroll; font-size: 0.85rem; color: #ccc; }
+      #log { width: 100%; max-width: 950px; height: 100px; background: #000; border: 1px solid #555; margin-top: 20px; padding: 10px; overflow-y: scroll; font-size: 0.85rem; color: #ccc; }
     </style>
   </head>
-  <body id="main-body">
-
-    <div id="glitch-overlay">
-      <div class="glitch-text">Hahaha you want to much money but bad boy</div>
-      <div id="countdown" class="jitter-text">200</div>
-    </div>
+  <body>
 
     <h1>STEAL A MEME: TYCOON</h1>
+
+    <div id="event-banner">EVENT ACTIVE</div>
 
     <div id="hud">
       <div>Cash: <span id="money" class="money-text">$0</span></div>
       <div>Income: <span id="income" class="money-text">$0</span>/sec</div>
     </div>
 
-    <button id="shieldBtn" class="btn-shield" onclick="toggleShield()">ACTIVATE SHIELD (Ready)</button>
-
     <div id="game-board">
-      <div id="player-zone" class="zone">
+      <div class="zone">
         <h2>YOUR BASE</h2>
         <div id="my-units" class="unit-list"></div>
         <div class="actions">
-          <button id="sellModeBtn" class="btn-sell-mode" onclick="toggleSellMode()">SELL MODE: OFF</button>
+          <button id="sellModeBtn" class="btn-buy" style="background:#444;color:white" onclick="toggleSellMode()">SELL MODE: OFF</button>
           
-          <h3>MARKETPLACE</h3>
-          <button class="btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50)</button>
-          <button class="btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200)</button>
-          <button class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1k)</button>
-          <button class="btn-buy" style="border: 1px solid white;" onclick="buyUnit('Gigachad')">Gigachad ($10k | +$1k/s) ★</button>
-          
-          <h3>BASE UPGRADES</h3>
-          <button id="diamondStatueBtn" class="btn-upgrade" onclick="buyUnit('Diamond Statue')">Diamond Statue ($5k) [0/15]</button>
-          <button id="serverRoomBtn" class="btn-upgrade" onclick="buyUnit('Server Room')">Server Room ($100k) [0/5]</button>
-          
-          <h3>⚠️ SECRET ⚠️</h3>
-          <button class="btn-glitch" onclick="triggerGlitch()">GLITCHED COIN ($1)</button>
+          <h3>PETS ($30,000 | +5%)</h3>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+            <button class="btn-pet" onclick="buyUnit('Tralalao tralala')">Tralalao</button>
+            <button class="btn-pet" onclick="buyUnit('Tung tung tung sahur')">Tung</button>
+            <button class="btn-pet" onclick="buyUnit('Tata ta sahur')">Tata</button>
+            <button class="btn-pet" onclick="buyUnit('Br br patpin')">Br br</button>
+            <button class="btn-pet" onclick="buyUnit('Mateo')">Mateo</button>
+          </div>
+
+          <h3>MARKET & UPGRADES</h3>
+          <button id="btn-NoobCube" class="btn-buy" onclick="buyUnit('Noob Cube')">Noob Cube ($50)</button>
+          <button id="btn-VibeCat" class="btn-buy" onclick="buyUnit('Vibe Cat')">Vibe Cat ($200)</button>
+          <button id="btn-GoldenDoge" class="btn-buy" onclick="buyUnit('Golden Doge')">Golden Doge ($1k)</button>
+          <button id="btn-Gigachad" class="btn-buy" style="border: 2px solid white" onclick="buyUnit('Gigachad')">Gigachad ($10k)</button>
+          <button id="btn-DiamondStatue" class="btn-up" onclick="buyUnit('Diamond Statue')">Diamond Statue ($5k)</button>
+          <button id="btn-ServerRoom" class="btn-up" onclick="buyUnit('Server Room')">Server Room ($100k)</button>
         </div>
       </div>
+
       <div class="zone">
-        <h2>NEIGHBOR'S BASE</h2>
+        <h2>NEIGHBOR</h2>
         <div id="enemy-units" class="unit-list"></div>
-        <div class="actions">
-          <button class="btn-steal" onclick="attemptSteal()">🏃 STEAL UNIT</button>
-        </div>
+        <button class="btn-buy" style="background:var(--accent-color);color:white;width:100%;margin-top:10px" onclick="attemptSteal()">🏃 RAID NEIGHBOR</button>
       </div>
     </div>
 
-    <div id="log">The neighbor can't spawn Gigachads anymore. Only YOU can own them!</div>
+    <div id="log">All pets now cost $30k and give a 5% boost!</div>
 
     <script>
       let money = 100;
       let myUnits = [];
       let enemyUnits = [];
-      let gameActive = true;
-      let shieldActive = false;
-      let shieldReady = true;
       let sellMode = false;
+      let currentEvent = null;
+      let lavaItems = [];
 
       const unitTypes = {
-        "Noob Cube": { cost: 50, mps: 2, icon: "🧊", permanent: false },
-        "Vibe Cat": { cost: 200, mps: 10, icon: "🐱", permanent: false },
-        "Golden Doge": { cost: 1000, mps: 60, icon: "🐕", permanent: false },
-        "Gigachad": { cost: 10000, mps: 1000, icon: "🗿", permanent: false, isElite: true },
-        "Diamond Statue": { cost: 5000, mps: 300, icon: "💎", permanent: true, limit: 15 },
-        "Server Room": { cost: 100000, mps: 5000, icon: "🖥️", permanent: true, limit: 5 }
+        "Noob Cube": { id: "NoobCube", cost: 50, mps: 2, icon: "🧊", canNeighborHave: true },
+        "Vibe Cat": { id: "VibeCat", cost: 200, mps: 10, icon: "🐱", canNeighborHave: true },
+        "Golden Doge": { id: "GoldenDoge", cost: 1000, mps: 60, icon: "🐕", canNeighborHave: true },
+        "Gigachad": { id: "Gigachad", cost: 10000, mps: 1000, icon: "🗿", canNeighborHave: false },
+        "Diamond Statue": { id: "DiamondStatue", cost: 5000, mps: 300, icon: "💎", permanent: true },
+        "Server Room": { id: "ServerRoom", cost: 100000, mps: 5000, icon: "🖥️", permanent: true },
+        // Updated Pets: All 30k and 5% boost
+        "Tralalao tralala": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
+        "Tung tung tung sahur": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
+        "Tata ta sahur": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
+        "Br br patpin": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true },
+        "Mateo": { cost: 30000, mps: 0, multiplier: 0.05, icon: "🐾", isPet: true }
       };
 
-      // Income Loop
-      setInterval(() => {
-        if (!gameActive) return;
-        money += myUnits.reduce((acc, u) => acc + u.mps, 0);
-        updateUI();
-      }, 1000);
+      setInterval(startRandomEvent, 600000);
 
-      // Spawner Loop (NO GIGACHADS FOR NEIGHBOR)
-      setInterval(() => {
-        if (!gameActive) return;
-        
-        // Neighbor steals YOUR stuff
-        const targets = myUnits.filter(u => !u.permanent);
-        if (targets.length > 0 && !shieldActive && Math.random() < 0.3) {
-           const victim = targets[Math.floor(Math.random() * targets.length)];
-           myUnits.splice(myUnits.indexOf(victim), 1);
-           enemyUnits.push(victim);
-           log(`The neighbor stole your ${victim.name}!`, "log-bad");
-        }
-        
-        // Spawn neighbor units (EXCLUDES GIGACHAD)
-        const commonKeys = ["Noob Cube", "Vibe Cat", "Golden Doge"];
-        const name = commonKeys[Math.floor(Math.random() * commonKeys.length)];
-        enemyUnits.push({ ...unitTypes[name], name });
-        updateUI();
-      }, 5000);
+      function startRandomEvent() {
+        const events = ['LAVA', 'ICE', 'EARTH', 'UFO', 'TACO'];
+        const choice = events[Math.floor(Math.random() * events.length)];
+        const banner = document.getElementById('event-banner');
+        banner.style.display = "block";
+        currentEvent = choice;
 
-      function toggleSellMode() {
-        if (!gameActive) return;
-        sellMode = !sellMode;
-        const btn = document.getElementById("sellModeBtn");
-        const list = document.getElementById("my-units");
-        if (sellMode) {
-          btn.innerText = "SELL MODE: ON";
-          btn.classList.add("sell-mode-active");
-          list.classList.add("sell-cursor");
+        if (choice === 'LAVA') {
+          banner.innerText = "🌋 FIRE SALE: +10% BOOST ON LAVA ITEMS!";
+          banner.style.borderColor = "var(--lava-color)";
+          const ids = ["NoobCube", "VibeCat", "GoldenDoge", "Gigachad", "DiamondStatue"];
+          lavaItems = ids.sort(() => 0.5 - Math.random()).slice(0, 2);
+          lavaItems.forEach(id => {
+              const el = document.getElementById(`btn-${id}`);
+              if(el) el.classList.add('lava-btn');
+          });
         } else {
-          btn.innerText = "SELL MODE: OFF";
-          btn.classList.remove("sell-mode-active");
-          list.classList.remove("sell-cursor");
+          banner.innerText = choice + " EVENT ACTIVE!";
+          banner.style.borderColor = "white";
         }
-      }
 
-      function sellItem(index) {
-        if (!gameActive || !sellMode) return;
-        const item = myUnits[index];
-        if (item.permanent) return; // Prevent selling statues
-        
-        const refund = Math.floor(item.cost * 0.5);
-        money += refund;
-        log(`Sold ${item.name} for $${refund}`, "money-text");
-        myUnits.splice(index, 1);
-        updateUI();
+        setTimeout(() => {
+          currentEvent = null;
+          banner.style.display = "none";
+          lavaItems.forEach(id => {
+              const el = document.getElementById(`btn-${id}`);
+              if(el) el.classList.remove('lava-btn');
+          });
+          lavaItems = [];
+        }, 45000);
       }
 
       function buyUnit(name) {
-        if (!gameActive || sellMode) return;
-        const u = unitTypes[name];
-        if (u.limit && myUnits.filter(x => x.name === name).length >= u.limit) return;
-        if (money >= u.cost) {
-          money -= u.cost;
-          myUnits.push({ ...u, name });
+        let u = {...unitTypes[name]};
+        // Pets don't get Earth discount as they are in the Sanctuary
+        let cost = (currentEvent === 'EARTH' && !u.isPet) ? u.cost * 0.5 : u.cost;
+        let boost = (lavaItems.includes(u.id)) ? 0.10 : 0;
+
+        if (money >= cost) {
+          money -= cost;
+          myUnits.push({ ...u, name, multiplier: (u.multiplier || 0) + boost, isLava: boost > 0 });
           updateUI();
-        }
+        } else { log("Insufficient funds!", "red"); }
       }
 
-      function attemptSteal() {
-        if (!gameActive || enemyUnits.length === 0 || sellMode) return;
-        if (Math.random() > 0.5) {
-            myUnits.push(enemyUnits.pop());
-            log("Stole a meme from the neighbor!", "money-text");
-        } else if (money >= 25) {
-            money -= 25;
-            log("Caught! Paid $25 fine.", "log-bad");
+      setInterval(() => {
+        let base = myUnits.reduce((acc, u) => acc + u.mps, 0);
+        let m = 1 + myUnits.reduce((acc, u) => acc + (u.multiplier || 0), 0);
+        if(currentEvent === 'ICE') m *= 0.5;
+        if(currentEvent === 'TACO') m *= 1.2;
+        money += Math.floor(base * m);
+        updateUI();
+      }, 1000);
+
+      setInterval(() => {
+        const possible = Object.keys(unitTypes).filter(k => unitTypes[k].canNeighborHave);
+        const name = possible[Math.floor(Math.random() * possible.length)];
+        enemyUnits.push({ ...unitTypes[name], name });
+
+        const stealable = myUnits.filter(u => !u.permanent && !u.isPet && u.name !== "Gigachad");
+        if (stealable.length > 0 && Math.random() < 0.2 && currentEvent !== 'ICE') {
+          const victim = stealable[Math.floor(Math.random() * stealable.length)];
+          myUnits.splice(myUnits.indexOf(victim), 1);
+          enemyUnits.push(victim);
+          log(`The neighbor stole your ${victim.name}!`, "red");
         }
         updateUI();
-      }
+      }, 10000);
 
-      function triggerGlitch() {
-        if (!gameActive || money < 1) return;
-        money -= 1;
-        gameActive = false;
-        if (sellMode) toggleSellMode(); // Force off
-        document.getElementById("main-body").classList.add("glitch-active-body");
-        document.getElementById("glitch-overlay").style.display = "flex";
-        
-        let timeLeft = 200;
-        const timer = setInterval(() => {
-          timeLeft--;
-          document.getElementById("countdown").innerText = timeLeft;
-          if (timeLeft <= 0) {
-            clearInterval(timer);
-            gameActive = true;
-            document.getElementById("main-body").classList.remove("glitch-active-body");
-            document.getElementById("glitch-overlay").style.display = "none";
-            updateUI();
+      function attemptSteal() {
+        if (enemyUnits.length > 0) {
+          if (Math.random() > 0.5) {
+            myUnits.push(enemyUnits.pop());
+            log("Steal successful!", "green");
+          } else {
+            money = Math.max(0, money - 50);
+            log("Caught! Paid $50 fine.", "red");
           }
-        }, 1000);
+          updateUI();
+        }
       }
 
-      function toggleShield() {
-        if (!gameActive || !shieldReady || sellMode) return;
-        shieldActive = true; shieldReady = false;
-        setTimeout(() => { 
-          shieldActive = false; 
-          setTimeout(() => { shieldReady = true; updateUI(); }, 12000);
-          updateUI();
-        }, 8000);
+      function toggleSellMode() {
+        sellMode = !sellMode;
+        document.getElementById("sellModeBtn").innerText = sellMode ? "SELL MODE: ON" : "SELL MODE: OFF";
+      }
+
+      function sellItem(i) {
+        if (!sellMode || myUnits[i].permanent) return;
+        money += Math.floor(unitTypes[myUnits[i].name].cost * 0.5);
+        myUnits.splice(i, 1);
         updateUI();
       }
 
       function updateUI() {
         document.getElementById("money").innerText = `$${money.toLocaleString()}`;
-        document.getElementById("income").innerText = gameActive ? `$${myUnits.reduce((acc, u) => acc + u.mps, 0).toLocaleString()}` : "$0";
+        let base = myUnits.reduce((acc, u) => acc + u.mps, 0);
+        let m = 1 + myUnits.reduce((acc, u) => acc + (u.multiplier || 0), 0);
+        if(currentEvent === 'ICE') m *= 0.5;
+        if(currentEvent === 'TACO') m *= 1.2;
+        document.getElementById("income").innerText = `$${Math.floor(base * m).toLocaleString()}`;
         
         const container = document.getElementById("my-units");
         container.innerHTML = "";
-        myUnits.forEach((u, index) => {
+        myUnits.forEach((u, i) => {
           let d = document.createElement("div");
-          d.className = `unit ${u.permanent ? 'unit-permanent' : ''} ${u.isElite ? 'unit-elite' : ''}`;
+          d.className = `unit ${u.isPet?'unit-pet':''} ${u.isLava?'unit-boosted':''} ${u.permanent?'unit-upgrade':''}`;
           d.innerText = `${u.icon} ${u.name}`;
-          d.onclick = () => sellItem(index);
+          d.onclick = () => sellItem(i);
           container.appendChild(d);
         });
 
-        const enemyContainer = document.getElementById("enemy-units");
-        enemyContainer.innerHTML = "";
+        const eContainer = document.getElementById("enemy-units");
+        eContainer.innerHTML = "";
         enemyUnits.forEach(u => {
           let d = document.createElement("div");
-          d.className = `unit ${u.isElite ? 'unit-elite' : ''}`;
+          d.className = `unit`;
           d.innerText = `${u.icon} ${u.name}`;
-          enemyContainer.appendChild(d);
+          eContainer.appendChild(d);
         });
       }
 
-      function log(msg, type) {
+      function log(msg, color) {
         const p = document.createElement("div");
-        p.innerText = `> ${msg}`;
-        p.className = type;
+        p.innerText = `> ${msg}`; p.style.color = color;
         document.getElementById("log").prepend(p);
       }
       updateUI();
